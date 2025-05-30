@@ -16,7 +16,7 @@ class Book extends Model
         return $this->hasMany(Note::class);
     }
 
-    public function recentlyReadBy()
+    public function recentlyReadBooks()
     {
         return $this->hasMany(RecentlyReadBook::class);
     }

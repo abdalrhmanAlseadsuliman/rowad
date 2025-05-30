@@ -57,6 +57,7 @@ class User extends Authenticatable
         return $this->belongsTo(StudyPlan::class, 'plan_id');
     }
 
+
     public function favorites()
     {
         return $this->hasMany(Favorite::class);
