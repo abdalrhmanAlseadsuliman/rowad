@@ -4,6 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use App\Enums\Role;
+
 return new class extends Migration
 {
     /**
@@ -20,7 +22,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'student'])->default('student');
+            // $table->enum('role', ['admin', 'student'])->default('student');
+            $table->enum('role', array_column(Role::cases(), 'value'))->default(Role::Student->value);
             $table->foreignId('plan_id')->nullable()->constrained('study_plans')->onDelete('set null');
             $table->rememberToken();
             $table->timestamps();
