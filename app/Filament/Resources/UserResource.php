@@ -3,76 +3,73 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
+use App\Models\StudyPlan;
 use Filament\Forms;
+use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Hash;
 use App\Enums\Role;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-
     protected static ?string $navigationLabel = 'الطلاب';
     protected static ?string $pluralModelLabel = 'الطلاب';
     protected static ?string $modelLabel = 'طالب';
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('role', Role::Student);
+    }
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('father')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\DatePicker::make('birthdate'),
-               FileUpload::make('img')
+                FileUpload::make('img')
                     ->image()
                     ->imageEditor()
                     ->circleCropper()
-                     ->disk('public_direct')
                     ->label('الصورة الشخصية'),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('phone')
-                    ->tel()
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->required()
-                    ->maxLength(255),
-                   Select::make('role')
+
+                TextInput::make('name')->required()->label('الاسم الكامل'),
+                TextInput::make('father')->label('اسم الأب'),
+                DatePicker::make('birthdate')->label('تاريخ الميلاد'),
+
+                TextInput::make('email')->email()->required()->unique(ignoreRecord: true)->label('البريد الإلكتروني'),
+                TextInput::make('phone')->label('رقم الهاتف'),
+
+                Select::make('role')
                     ->label('الدور')
                     ->options(Role::class)
                     ->required(),
-                //  Select::make('plan_id')
-                //     ->label('الخطة الدراسية')
-                //     ->relationship('plan', 'name')
-                //     ->searchable()
-                //     ->nullable(),
+
                 Select::make('plan_id')
-                    ->label(label: 'الخطة الدراسية')
-                    ->options(\App\Models\StudyPlan::pluck('name', 'id'))
+                    ->label('الخطة الدراسية')
+                    ->relationship('plan', 'name')
                     ->searchable()
-                    ->nullable()
+                    ->nullable(),
+
+                TextInput::make('password')
+                    ->password()
+                    ->label('كلمة المرور')
+                    ->dehydrateStateUsing(fn ($state) => !empty($state) ? bcrypt($state) : null)
+                    ->required(fn (string $context) => $context === 'create')
+                    ->label('كلمة المرور'),
             ]);
     }
 
@@ -80,11 +77,12 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('img')->label('الصورة')->circular(),
+                ImageColumn::make('img')->label('الصورة')->disk('public_direct')->circular(),
                 TextColumn::make('name')->label('الاسم'),
+                TextColumn::make('father')->label('الأب'),
                 TextColumn::make('email')->label('البريد'),
                 TextColumn::make('phone')->label('الهاتف'),
-                TextColumn::make('role')->label('الدور')->badge(),
+                // TextColumn::make('role')->label('الدور')->badge(),
                 TextColumn::make('plan.name')->label('الخطة الدراسية'),
             ])
             ->filters([
@@ -102,7 +100,7 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            // يمكن إضافة علاقات هنا لاحقًا مثل الملاحظات أو الكتب المقروءة
         ];
     }
 
@@ -111,7 +109,6 @@ class UserResource extends Resource
         return [
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
-            'view' => Pages\ViewUser::route('/{record}'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
