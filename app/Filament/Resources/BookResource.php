@@ -71,6 +71,8 @@ class BookResource extends Resource
                     ->acceptedFileTypes(['application/pdf'])
                     ->directory('books-pdf')
                       ->directory('books'),
+
+
             ]);
     }
 

@@ -23,8 +23,8 @@ class AdminResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationLabel = 'المديرين';
-    protected static ?string $pluralModelLabel = 'المديرين';
+    protected static ?string $navigationLabel = 'المدراء';
+    protected static ?string $pluralModelLabel = 'المدراء';
     protected static ?string $modelLabel = 'مدير';
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
