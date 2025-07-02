@@ -67,4 +67,34 @@ class User extends Authenticatable
     {
         return $this->hasMany(RecentlyReadBook::class);
     }
+
+
+   /**
+     * تحقق من دور المستخدم
+     */
+    public function hasRole(string|Role $role): bool
+    {
+        if (is_string($role)) {
+            $role = Role::from($role);
+        }
+
+        return $this->role === $role;
+    }
+
+    /**
+     * تحقق من كون المستخدم admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(Role::Admin);
+    }
+
+    /**
+     * تحقق من كون المستخدم student
+     */
+    public function isStudent(): bool
+    {
+        return $this->hasRole(Role::Student);
+    }
+
 }
