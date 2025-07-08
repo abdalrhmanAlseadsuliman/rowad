@@ -40,19 +40,11 @@ class BookResource extends Resource
                 Tables\Columns\ImageColumn::make('cover_image')->label('الغلاف'),
                 Tables\Columns\TextColumn::make('author')->label('المؤلف'),
                 Tables\Columns\TextColumn::make('publisher')->label('الناشر'),
-                Tables\Columns\TextColumn::make('pdf_path')
-                    ->label('عرض الملف')
-                    ->simpleLightbox('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf')
-
+               
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()->label('عرض'),
-                Tables\Actions\Action::make('read')
-                    ->label('قراءة')
-                    ->icon('heroicon-o-book-open')
-                    ->color('success')
-                    ->url(fn(Book $record): string => route('student.book.read', $record))
-                    ->openUrlInNewTab(),
+               
             ])
             ->bulkActions([]);
     }

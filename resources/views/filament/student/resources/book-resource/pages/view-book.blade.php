@@ -1,127 +1,134 @@
-{{-- resources/views/filament/student/resources/book-resource/pages/view-book.blade.php --}}
-<x-filament-panels::page>
-    <div class="space-y-6">
-        {{-- معلومات الكتاب --}}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                        {{ $record->title }}
-                    </h1>
-                    <p class="text-gray-600 dark:text-gray-300">
-                        المؤلف: {{ $record->author ?? 'غير محدد' }}
-                    </p>
-                    @if($record->description)
-                        <p class="text-gray-600 dark:text-gray-300 mt-2">
-                            {{ $record->description }}
-                        </p>
-                    @endif
-                </div>
+<div> <!-- العنصر الجذري -->
 
-                <div class="flex space-x-2">
-                    <button
-                        onclick="openBookViewer()"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253z"></path>
-                        </svg>
-                        قراءة الكتاب
-                    </button>
-                </div>
+    <div class="grid grid-cols-12 gap-4">
+        {{-- شريط الفهرس --}}
+        <div class="col-span-3 bg-gray-100 p-4 rounded shadow overflow-auto max-h-[80vh]">
+            <h2 class="text-lg font-bold mb-2">الفهرس</h2>
+            <ul id="outline" class="space-y-1 text-sm"></ul>
+
+            {{-- قائمة العلامات --}}
+            <h3 class="mt-6 font-semibold">علاماتي</h3>
+            <ul id="bookmarks" class="space-y-1 text-sm"></ul>
+        </div>
+
+        {{-- عرض صفحات PDF --}}
+        <div class="col-span-9 border rounded shadow overflow-auto max-h-[80vh] p-4" id="pdf-container">
+            <canvas id="pdf-canvas" class="mx-auto shadow rounded"></canvas>
+            <div class="mt-2 text-center">
+                <button onclick="prevPage()" class="bg-gray-300 px-3 py-1 rounded mr-2">الصفحة السابقة</button>
+                <button onclick="nextPage()" class="bg-gray-300 px-3 py-1 rounded ml-2">الصفحة التالية</button>
+            </div>
+            <div class="mt-2 text-center">
+                الصفحة <span id="current-page">0</span> من <span id="total-pages">0</span>
             </div>
 
-            {{-- عارض الكتاب --}}
-            <div id="book-viewer" class="hidden">
-                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold">{{ $record->title }}</h3>
-                        <div class="flex space-x-2">
-                            <button
-                                onclick="toggleFullscreen()"
-                                class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm">
-                                ملء الشاشة
-                            </button>
-                            <button
-                                onclick="closeBookViewer()"
-                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
-                                إغلاق
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-                    <iframe
-                        id="book-frame"
-                        src=""
-                        width="100%"
-                        height="600"
-                        style="border: none;"
-                        oncontextmenu="return false;"
-                        title="{{ $record->title }}">
-                    </iframe>
-                </div>
+            {{-- زر وضع علامة --}}
+            <div class="mt-4 text-center">
+                <button onclick="addBookmark()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                    📌 وضع علامة على هذه الصفحة
+                </button>
             </div>
         </div>
     </div>
 
-    <script>
-        function openBookViewer() {
-            const viewer = document.getElementById('book-viewer');
-            const frame = document.getElementById('book-frame');
+</div>
 
-            viewer.classList.remove('hidden');
-            frame.src = '{{ $bookUrl }}';
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-            // تسجيل بداية القراءة
-            updateReadingProgress();
+    const pdfUrl = "{{ asset('storage/' . $record->pdf_path) }}";
+    const STORAGE_KEY = 'bookmarks_{{ $record->id }}'; // تخزين العلامات مميز لكل كتاب حسب ID
+
+    let pdfDoc = null;
+    let currentPage = 1;
+    let totalPages = 0;
+
+    const canvas = document.getElementById('pdf-canvas');
+    const ctx = canvas.getContext('2d');
+    const currentPageElem = document.getElementById('current-page');
+    const totalPagesElem = document.getElementById('total-pages');
+    const bookmarksList = document.getElementById('bookmarks');
+
+   async function loadPdf() {
+    pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+    totalPages = pdfDoc.numPages;
+    totalPagesElem.textContent = totalPages;
+
+    // نحاول جلب الصفحة المحفوظة كعلامة (إذا وجدت)
+    const savedBookmarks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    
+    // نحدد الصفحة الافتراضية للفتح
+    let startPage = 1;
+    if (savedBookmarks.length > 0) {
+        // مثلا نفتح الصفحة الأولى المحفوظة كعلامة (يمكن تغيير المنطق حسب الحاجة)
+        startPage = savedBookmarks.sort((a,b) => a - b)[0];
+    }
+    
+    renderPage(startPage);
+    loadBookmarks();
+}
+
+
+    async function renderPage(pageNum) {
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 1.4 });
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        currentPage = pageNum;
+        currentPageElem.textContent = currentPage;
+    }
+
+    function prevPage() {
+        if (currentPage <= 1) return;
+        currentPage--;
+        renderPage(currentPage);
+    }
+
+    function nextPage() {
+        if (currentPage >= totalPages) return;
+        currentPage++;
+        renderPage(currentPage);
+    }
+
+    // إضافة علامة
+    function addBookmark() {
+        let bookmarks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        if (!bookmarks.includes(currentPage)) {
+            bookmarks.push(currentPage);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
+            loadBookmarks();
+            alert(`تم وضع علامة على الصفحة ${currentPage}`);
+        } else {
+            alert(`الصفحة ${currentPage} موسومة مسبقاً`);
+        }
+    }
+
+    // تحميل وعرض العلامات
+    function loadBookmarks() {
+        let bookmarks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        bookmarksList.innerHTML = '';
+
+        if (bookmarks.length === 0) {
+            bookmarksList.innerHTML = '<li class="text-gray-500">لا توجد علامات محفوظة</li>';
+            return;
         }
 
-        function closeBookViewer() {
-            const viewer = document.getElementById('book-viewer');
-            const frame = document.getElementById('book-frame');
+        bookmarks.sort((a,b) => a - b);
 
-            viewer.classList.add('hidden');
-            frame.src = '';
-        }
-
-        function toggleFullscreen() {
-            const viewer = document.getElementById('book-viewer');
-
-            if (viewer.requestFullscreen) {
-                viewer.requestFullscreen();
-            } else if (viewer.webkitRequestFullscreen) {
-                viewer.webkitRequestFullscreen();
-            } else if (viewer.msRequestFullscreen) {
-                viewer.msRequestFullscreen();
-            }
-        }
-
-        function updateReadingProgress() {
-            // يمكنك إضافة AJAX call هنا لتحديث تقدم القراءة
-            fetch('{{ route("student.book.progress", $record) }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    book_id: {{ $record->id }},
-                    started_reading: true
-                })
-            });
-        }
-
-        // منع النقر بالزر الأيمن والطباعة
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
+        bookmarks.forEach(pageNum => {
+            const li = document.createElement('li');
+            li.textContent = `الصفحة ${pageNum}`;
+            li.classList.add('cursor-pointer', 'text-blue-600', 'hover:underline');
+            li.onclick = () => {
+                renderPage(pageNum);
+            };
+            bookmarksList.appendChild(li);
         });
+    }
 
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && (e.keyCode === 83 || e.keyCode === 80)) {
-                e.preventDefault();
-                return false;
-            }
-        });
-    </script>
-</x-filament-panels::page>
+    loadPdf();
+</script>

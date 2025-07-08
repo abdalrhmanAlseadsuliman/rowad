@@ -1,0 +1,11 @@
+/* public/css/filament-custom.css */
+
+/* تغيير لون الخلفية لعنصر الـ sidebar */
+.filament-sidebar {
+    background-color: #1e293b !important; /* dark slate */
+}
+
+/* تكبير حجم العناوين */
+.filament-header-heading {
+    font-size: 2rem !important;
+}
