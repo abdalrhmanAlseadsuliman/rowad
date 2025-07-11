@@ -25,6 +25,10 @@ class Book extends Model
     {
         return $this->hasMany(Favorite::class);
     }
+    public function favoritedByUsers()
+{
+    return $this->belongsToMany(User::class, 'favorites');
+}
 
     public function studyPlans()
     {

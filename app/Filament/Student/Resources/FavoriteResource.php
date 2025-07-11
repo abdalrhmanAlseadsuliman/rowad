@@ -2,25 +2,29 @@
 
 namespace App\Filament\Student\Resources;
 
-use App\Filament\Student\Resources\FavoriteResource\Pages;
-use App\Models\Favorite;
+use App\Models\Book;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Student\Resources\FavoriteResource\Pages;
 
 class FavoriteResource extends Resource
 {
-    protected static ?string $model = Favorite::class;
+    // ✅ بدل الموديل ليكون Book وليس Favorite
+    protected static ?string $model = Book::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
     protected static ?string $navigationLabel = 'المفضلة';
 
+    // ✅ فقط الكتب التي أضافها المستخدم للمفضلة
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('user_id', auth()->id());
+            ->whereHas('favoritedByUsers', function ($query) {
+                $query->where('user_id', auth()->id());
+            });
     }
 
     public static function form(Form $form): Form
@@ -32,24 +36,17 @@ class FavoriteResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('book.namebook')
-                    ->label('اسم الكتاب')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('book.subject')
-                    ->label('المادة'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('أُضيفت في')
-                    ->dateTime()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('namebook')->label('اسم الكتاب')->searchable(),
+                Tables\Columns\TextColumn::make('subject')->label('المادة')->searchable(),
+                Tables\Columns\TextColumn::make('educational_year')->label('الصف الدراسي'),
+                Tables\Columns\ImageColumn::make('cover_image')->label('الغلاف'),
+                Tables\Columns\TextColumn::make('author')->label('المؤلف'),
+                Tables\Columns\TextColumn::make('publisher')->label('الناشر'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()->label('عرض'),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('حذف'),
-                ]),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array
@@ -61,7 +58,6 @@ class FavoriteResource extends Resource
     {
         return [
             'index' => Pages\ListFavorites::route('/'),
-            'view' => Pages\ViewFavorite::route('/{record}'),
         ];
     }
 }
