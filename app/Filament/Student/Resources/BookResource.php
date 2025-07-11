@@ -46,33 +46,43 @@ class BookResource extends Resource
             Tables\Actions\ViewAction::make()->label('عرض'),
 
             // ✅ هذا هو زر المفضلة، تم نقله لمكانه الصحيح داخل ->actions()
-            Action::make('toggleFavorite')
-                ->label(fn ($record) =>
-                    auth()->user()->favoriteBooks->contains($record->id)
-                        ? 'إزالة من المفضلة'
-                        : 'إضافة إلى المفضلة'
-                )
-                ->icon(fn ($record) =>
-                    auth()->user()->favoriteBooks->contains($record->id)
-                        ? 'heroicon-o-bookmark-slash'
-                        : 'heroicon-o-bookmark'
-                )
-                ->color(fn ($record) =>
-                    auth()->user()->favoriteBooks->contains($record->id)
-                        ? 'danger'
-                        : 'primary'
-                )
-                ->action(function ($record) {
-                    $user = auth()->user();
-                    if ($user->favoriteBooks->contains($record->id)) {
-                        $user->favoriteBooks()->detach($record->id);
-                    } else {
-                        $user->favoriteBooks()->attach($record->id);
-                    }
-                }),
-        ])
-        ->bulkActions([]);
-}
+      Action::make('toggleFavorite')
+    ->label(fn ($record) =>
+        auth()->user()->favoriteBooks->contains($record->id)
+            ? 'إزالة من المفضلة'
+            : 'إضافة إلى المفضلة'
+    )
+    ->icon(fn ($record) =>
+        auth()->user()->favoriteBooks->contains($record->id)
+            ? 'heroicon-o-bookmark-slash'
+            : 'heroicon-o-bookmark'
+    )
+    ->color(fn ($record) =>
+        auth()->user()->favoriteBooks->contains($record->id)
+            ? 'danger'
+            : 'primary'
+    )
+    ->action(function ($record) {
+        $user = auth()->user();
+
+        // ✅ تبديل المفضلة
+        if ($user->favoriteBooks->contains($record->id)) {
+            $user->favoriteBooks()->detach($record->id);
+        } else {
+            $user->favoriteBooks()->attach($record->id);
+        }
+
+        // ✅ إعادة تحميل العلاقة حتى تُحدّث الأيقونة واللون فورًا
+        $user->load('favoriteBooks');
+    })
+    ->after(function ($record, $action) {
+        
+        $action->getLivewire()->dispatch('$refresh');
+    })
+                   
+            ])
+            ->bulkActions([]);
+    }
 
     public static function getRelations(): array
     {
