@@ -46,25 +46,43 @@ class AdminResource extends Resource
                     ->label('البريد الإلكتروني')
                     ->email()
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->autocomplete('off'),
                 Forms\Components\TextInput::make('phone')
                     ->label('رقم الهاتف')
                     ->tel()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('password')
                     ->label('كلمة المرور')
+                    ->revealable()
                     ->password()
                     ->required()
                     ->maxLength(255)
-                    ->dehydrateStateUsing(fn($state) => Hash::make($state)),
+                    ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                    ->autocomplete('new-password')
+                    ->visible(function (string $operation, $record) {
+                        // إظهار الحقل في صفحة الإنشاء
+                        if ($operation === 'create') {
+                            return true;
+                        }
+
+                        // إظهار الحقل في صفحة التعديل فقط للمستخدم نفسه
+                        if ($operation === 'edit') {
+                            return auth()->id() === $record->id;
+                        }
+
+                        return false;
+                    }),
+
                 Forms\Components\Hidden::make('role')
                     ->default(Role::Admin->value),
                 FileUpload::make('img')
+                    ->label('الصورة الشخصية')
                     ->image()
                     ->imageEditor()
                     ->circleCropper()
                     ->disk('public_direct')
-                    ->label('الصورة الشخصية'),
+                    ->directory('admin-img'),
             ]);
     }
 

@@ -11,10 +11,21 @@ use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Split;
+
 class ViewAdmin extends ViewRecord
 {
     protected static string $resource = AdminResource::class;
-     public function infolist(Infolist $infolist): Infolist
+
+    public function getBreadcrumb(): string
+    {
+        return 'عرض';
+    }
+
+    public function getTitle(): string
+    {
+        return 'عرض مدير';
+    }
+    public function infolist(Infolist $infolist): Infolist
     {
         return $infolist
             ->schema([
@@ -41,7 +52,7 @@ class ViewAdmin extends ViewRecord
                         Infolists\Components\TextEntry::make('role')
                             ->label('الدور')
                             ->badge()
-                            ->formatStateUsing(fn ($state) => $state->getLabel()),
+                            ->formatStateUsing(fn($state) => $state->getLabel()),
                     ])
                     ->columns(2),
 
@@ -59,5 +70,13 @@ class ViewAdmin extends ViewRecord
                     ->columns(2)
                     ->collapsible(),
             ]);
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make()->label('تعديل'),
+            Actions\DeleteAction::make()->label('حذف'),
+        ];
     }
 }

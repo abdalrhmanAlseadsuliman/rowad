@@ -2,25 +2,27 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
-use App\Models\User;
-use App\Models\StudyPlan;
+use App\Enums\Role;
 use Filament\Forms;
+use App\Models\User;
 use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Models\StudyPlan;
 use Filament\Tables\Table;
-use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Hash;
-use App\Enums\Role;
+use App\Filament\Resources\UserResource\Pages;
 
 class UserResource extends Resource
 {
@@ -44,11 +46,14 @@ class UserResource extends Resource
                     ->image()
                     ->imageEditor()
                     ->circleCropper()
-                    ->label('الصورة الشخصية'),
+                    ->label('الصورة الشخصية')
+                    ->disk('public_direct')
+                    ->directory('user-img'),
+
 
                 TextInput::make('name')->required()->label('الاسم الكامل'),
                 TextInput::make('father')->label('اسم الأب'),
-                DatePicker::make('birthdate')->label('تاريخ الميلاد'),
+                // DatePicker::make('birthdate')->label('تاريخ الميلاد'),
 
                 TextInput::make('email')->email()->required()->unique(ignoreRecord: true)->label('البريد الإلكتروني'),
                 TextInput::make('phone')->label('رقم الهاتف'),
@@ -64,12 +69,46 @@ class UserResource extends Resource
                     ->searchable()
                     ->nullable(),
 
+                DatePicker::make('birthdate')
+                    ->label('تاريخ الميلاد')
+                    ->reactive() // مهم لتحديث كلمة المرور عند تغيير التاريخ
+                    ->afterStateUpdated(function ($state, Set $set) {
+                        if ($state) {
+                            $year = date('Y', strtotime($state));
+                            $set('password', $year);
+                        }
+                    }),
+
+
+
                 TextInput::make('password')
                     ->password()
+                    ->revealable()
+                    ->dehydrateStateUsing(fn($state) => Hash::make($state))
                     ->label('كلمة المرور')
-                    ->dehydrateStateUsing(fn ($state) => !empty($state) ? bcrypt($state) : null)
-                    ->required(fn (string $context) => $context === 'create')
-                    ->label('كلمة المرور'),
+                    ->dehydrateStateUsing(fn($state) => !empty($state) ? bcrypt($state) : null)
+                    ->required(fn(string $context) => $context === 'create')
+                    ->default(function (Get $get) {
+                        $birthdate = $get('birthdate');
+                        if ($birthdate) {
+                            return date('Y', strtotime($birthdate));
+                        }
+                        return null;
+                    })
+                    ->reactive()
+                    ->visible(function (string $operation, $record) {
+                        // إظهار الحقل في صفحة الإنشاء
+                        if ($operation === 'create') {
+                            return true;
+                        }
+
+                        // إظهار الحقل في صفحة التعديل فقط للمستخدم نفسه
+                        if ($operation === 'edit') {
+                            return auth()->id() === $record->id;
+                        }
+
+                        return false;
+                    }),
             ]);
     }
 
@@ -89,6 +128,7 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()->label('عرض'),
                 Tables\Actions\EditAction::make()->label('تعديل'),
                 Tables\Actions\DeleteAction::make()->label('حذف'),
             ])
@@ -109,6 +149,7 @@ class UserResource extends Resource
         return [
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
+            'view' => Pages\ViewUser::route('/{record}'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
