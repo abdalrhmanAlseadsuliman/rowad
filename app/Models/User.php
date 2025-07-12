@@ -32,6 +32,8 @@ class User extends Authenticatable
 
     protected $casts = [
         'role' => Role::class,
+        'subscription_end_date' => 'date',
+        'registration_date' => 'date',
     ];
 
     /**
@@ -69,7 +71,7 @@ class User extends Authenticatable
     }
 
 
-   /**
+    /**
      * تحقق من دور المستخدم
      */
     public function hasRole(string|Role $role): bool
@@ -97,4 +99,35 @@ class User extends Authenticatable
         return $this->hasRole(Role::Student);
     }
 
+
+
+    public function isSubscriptionActive(): bool
+    {
+        return $this->subscription_end_date && $this->subscription_end_date->isFuture();
+    }
+
+    public function isSubscriptionExpiringSoon(int $days = 30): bool
+    {
+        if (!$this->subscription_end_date) return false;
+
+        return $this->subscription_end_date->isFuture() &&
+            $this->subscription_end_date->diffInDays(now()) <= $days;
+    }
+
+    public function getSubscriptionStatusAttribute(): string
+    {
+        if (!$this->subscription_end_date) {
+            return 'no_subscription';
+        }
+
+        if ($this->subscription_end_date->isPast()) {
+            return 'expired';
+        }
+
+        if ($this->isSubscriptionExpiringSoon()) {
+            return 'expiring_soon';
+        }
+
+        return 'active';
+    }
 }
