@@ -20,6 +20,8 @@ class RecentlyReadBookResource extends Resource
 {
     protected static ?string $model = RecentlyReadBook::class;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $navigationLabel = 'الكتب المُتصفحة';
     protected static ?string $pluralModelLabel = 'الكتب المُتصفحة';
     protected static ?string $modelLabel = 'كتاب تم تصفحه';
@@ -70,7 +72,7 @@ class RecentlyReadBookResource extends Resource
 
                 TextColumn::make('last_read_at')
                     ->label('آخر قراءة')
-                    ->since(), 
+                    ->since(),
 
                 TextColumn::make('created_at')
                     ->label('تاريخ الإدخال')

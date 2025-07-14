@@ -19,6 +19,7 @@ use App\Filament\Resources\NoteResource\RelationManagers;
 class NoteResource extends Resource
 {
     protected static ?string $model = Note::class;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $navigationLabel = 'ملاحظات الطلاب';
     protected static ?string $pluralModelLabel = 'الملاحظات';

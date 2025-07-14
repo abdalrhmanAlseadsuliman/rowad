@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
 
 use Filament\Support\Facades\FilamentView;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -19,11 +20,11 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-   public function boot(): void
-{
-    FilamentView::registerRenderHook(
-        'panels::body.end',
-        fn (): string => Blade::render('
+    public function boot(): void
+    {
+        FilamentView::registerRenderHook(
+            'panels::body.end',
+            fn(): string => Blade::render('
             <style>
 /* إخفاء زر التحميل من PDF Viewer - جميع الاحتمالات */
 
@@ -237,5 +238,6 @@ class AppServiceProvider extends ServiceProvider
 }
 </style>
         ')
-    );}
+        );
+    }
 }
