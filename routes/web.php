@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SubscriptionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -47,3 +48,16 @@ Route::post('/student/book/progress/{book}', function (App\Models\Book $book) {
 
     return response()->json(['success' => true]);
 })->name('student.book.progress');
+
+
+Route::get('/subscription/expired', [SubscriptionController::class, 'expired'])
+    ->name('subscription.expired')
+    ->middleware('auth');
+
+Route::post('/logout', function () {
+    auth()->logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return redirect('/');
+})->name('logout');

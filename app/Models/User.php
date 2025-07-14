@@ -130,4 +130,22 @@ class User extends Authenticatable
 
         return 'active';
     }
+
+
+    // في User Model
+    public function isSubscriptionExpired(): bool
+    {
+        return !$this->subscription_end_date || $this->subscription_end_date->isPast();
+    }
+
+
+
+    public function daysUntilExpiration(): int
+    {
+        if (!$this->subscription_end_date) {
+            return 0;
+        }
+
+        return max(0, now()->diffInDays($this->subscription_end_date, false));
+    }
 }
