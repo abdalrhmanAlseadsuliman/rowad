@@ -67,6 +67,7 @@ class UserResource extends Resource
                     ->label('الخطة الدراسية')
                     ->relationship('plan', 'name')
                     ->searchable()
+                    ->preload()
                     ->nullable(),
 
                 DatePicker::make('birthdate')
