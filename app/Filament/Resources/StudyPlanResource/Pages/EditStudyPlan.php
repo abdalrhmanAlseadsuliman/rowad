@@ -10,10 +10,19 @@ class EditStudyPlan extends EditRecord
 {
     protected static string $resource = StudyPlanResource::class;
 
+    public function getBreadcrumb(): string
+    {
+        return 'تعديل';
+    }
+
+    public function getTitle(): string
+    {
+        return 'تعديل الخطة الدراسية';
+    }
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()->label('حذف'),
         ];
     }
 }

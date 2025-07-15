@@ -2,27 +2,29 @@
 
 namespace App\Filament\Resources\FavoriteResource\Pages;
 
-use App\Filament\Resources\FavoriteResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Resources\FavoriteResource;
 
-class ListFavorites extends ListRecords
+class ViewFavorite extends ViewRecord
 {
     protected static string $resource = FavoriteResource::class;
+
     public function getBreadcrumb(): string
     {
-        return 'القائمة';
+        return 'عرض';
     }
 
     public function getTitle(): string
     {
-        return 'المدراء';
+        return 'عرض الكتاب المفضل';
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            // Actions\CreateAction::make()->label(''),
+            Actions\EditAction::make()->label('تعديل'),
+            Actions\DeleteAction::make()->label('حذف'),
         ];
     }
 }

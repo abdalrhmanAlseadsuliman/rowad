@@ -19,12 +19,12 @@ class FavoriteResource extends Resource
 {
     protected static ?string $model = Favorite::class;
 
-       protected static ?string $navigationLabel = 'المفضلة';
+    protected static ?string $navigationLabel = 'المفضلة';
     protected static ?string $pluralModelLabel = 'المفضلة';
     protected static ?string $modelLabel = 'عنصر مفضل';
     protected static ?string $navigationIcon = 'heroicon-o-heart';
 
-  public static function form(Form $form): Form
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
@@ -81,6 +81,7 @@ class FavoriteResource extends Resource
         return [
             'index' => Pages\ListFavorites::route('/'),
             'create' => Pages\CreateFavorite::route('/create'),
+            'view' => Pages\ViewFavorite::route('/{record}'),
             'edit' => Pages\EditFavorite::route('/{record}/edit'),
         ];
     }

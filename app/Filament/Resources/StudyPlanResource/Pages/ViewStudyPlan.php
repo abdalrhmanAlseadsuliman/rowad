@@ -2,29 +2,31 @@
 
 namespace App\Filament\Resources\StudyPlanResource\Pages;
 
-use App\Filament\Resources\StudyPlanResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Resources\StudyPlanResource;
 
-class ListStudyPlans extends ListRecords
+
+class ViewStudyPlan extends ViewRecord
 {
     protected static string $resource = StudyPlanResource::class;
 
-
     public function getBreadcrumb(): string
     {
-        return 'القائمة';
+        return 'عرض';
     }
 
     public function getTitle(): string
     {
-        return 'المدراء';
+        return 'عرض الخطة الدراسية';
     }
+
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('إضافة خطة دراسية'),
+            Actions\EditAction::make()->label('تعديل'),
+            Actions\DeleteAction::make()->label('حذف'),
         ];
     }
 }

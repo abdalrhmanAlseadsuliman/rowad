@@ -2,28 +2,28 @@
 
 namespace App\Filament\Resources\BookResource\Pages;
 
-use App\Filament\Resources\BookResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\BookResource;
+use Filament\Resources\Pages\ViewRecord;
 
-class EditBook extends EditRecord
+class ViewBook extends ViewRecord
 {
     protected static string $resource = BookResource::class;
 
-
     public function getBreadcrumb(): string
     {
-        return 'تعديل';
+        return 'عرض';
     }
 
     public function getTitle(): string
     {
-        return 'تعديل بيانات الكتاب';
+        return 'عرض الكتاب';
     }
 
     protected function getHeaderActions(): array
     {
         return [
+            Actions\EditAction::make()->label('تعديل'),
             Actions\DeleteAction::make()->label('حذف'),
         ];
     }

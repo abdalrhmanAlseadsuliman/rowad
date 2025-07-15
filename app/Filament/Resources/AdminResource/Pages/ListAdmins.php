@@ -18,7 +18,7 @@ class ListAdmins extends ListRecords
         return 'القائمة';
     }
 
-      public function getTitle(): string
+    public function getTitle(): string
     {
         return 'المدراء';
     }
@@ -26,7 +26,7 @@ class ListAdmins extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('إضافة مدير جديد'),
+            Actions\CreateAction::make()->label('إضافة مدير'),
         ];
     }
 }

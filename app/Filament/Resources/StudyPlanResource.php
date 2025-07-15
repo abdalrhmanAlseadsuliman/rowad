@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class StudyPlanResource extends Resource
 {
-      protected static ?string $model = StudyPlan::class;
+    protected static ?string $model = StudyPlan::class;
 
     protected static ?string $navigationLabel = 'الخطط الدراسية';
     protected static ?string $pluralModelLabel = 'الخطط الدراسية';
@@ -25,7 +25,7 @@ class StudyPlanResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
 
-       public static function form(Form $form): Form
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
@@ -42,7 +42,7 @@ class StudyPlanResource extends Resource
             ]);
     }
 
-     public static function table(Table $table): Table
+    public static function table(Table $table): Table
     {
         return $table
             ->columns([
@@ -77,6 +77,7 @@ class StudyPlanResource extends Resource
         return [
             'index' => Pages\ListStudyPlans::route('/'),
             'create' => Pages\CreateStudyPlan::route('/create'),
+            'view' => Pages\ViewStudyPlan::route('/{record}'),
             'edit' => Pages\EditStudyPlan::route('/{record}/edit'),
         ];
     }
