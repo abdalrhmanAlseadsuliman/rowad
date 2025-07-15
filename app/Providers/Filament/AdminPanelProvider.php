@@ -2,13 +2,18 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\ContentStats;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use App\Filament\Widgets\UsersChart;
+use App\Filament\Widgets\StatsOverview;
+use App\Filament\Widgets\RecentActivity;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Filament\Http\Middleware\Authenticate;
+use App\Filament\Widgets\SubscriptionChart;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -40,7 +45,12 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // Widgets\FilamentInfoWidget::class,
+                StatsOverview::class,
+                UsersChart::class,
+                SubscriptionChart::class,
+                RecentActivity::class,
+                ContentStats::class,
             ])
             ->middleware([
                 EncryptCookies::class,

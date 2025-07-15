@@ -12,7 +12,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/student/book/read/{book}', function (App\Models\Book $book) {
         // التحقق من صلاحيات الطالب
-        if (!auth()->user()->hasRole('student')) {
+        if (!auth()->user()->hasRole('student') && !auth()->user()->hasRole('admin')) {
             abort(403);
         }
 
@@ -33,21 +33,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 
-Route::post('/student/book/progress/{book}', function (App\Models\Book $book) {
-    $user = auth()->user();
+// Route::post('/student/book/progress/{book}', function (App\Models\Book $book) {
+//     $user = auth()->user();
 
-    RecentlyReadBook::updateOrCreate(
-        [
-            'user_id' => $user->id,
-            'book_id' => $book->id,
-        ],
-        [
-            'last_read_at' => now(),
-        ]
-    );
+//     RecentlyReadBook::updateOrCreate(
+//         [
+//             'user_id' => $user->id,
+//             'book_id' => $book->id,
+//         ],
+//         [
+//             'last_read_at' => now(),
+//         ]
+//     );
 
-    return response()->json(['success' => true]);
-})->name('student.book.progress');
+//     return response()->json(['success' => true]);
+// })->name('student.book.progress');
 
 
 Route::get('/subscription/expired', [SubscriptionController::class, 'expired'])

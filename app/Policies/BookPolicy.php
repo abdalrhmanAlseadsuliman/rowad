@@ -23,13 +23,13 @@ class BookPolicy
         return $user->role === Role::Admin;
     }
 
-    public function view(User $user, Book $book): bool
-    {
-        return true;
-    }
+    // public function view(User $user, Book $book): bool
+    // {
+    //     return true;
+    // }
 
-    public function viewAny(User $user): bool
-    {
-        return true;
-    }
+    // public function viewAny(User $user): bool
+    // {
+    //     return true;
+    // }
 }

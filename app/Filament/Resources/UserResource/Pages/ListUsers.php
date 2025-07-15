@@ -18,7 +18,7 @@ class ListUsers extends ListRecords
 
     public function getTitle(): string
     {
-        return 'المدراء';
+        return 'الطلاب';
     }
 
     protected function getHeaderActions(): array

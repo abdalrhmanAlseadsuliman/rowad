@@ -24,6 +24,14 @@ use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\UserResource\Pages;
 
+
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\Indicator;
+use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Collection;
+use Carbon\Carbon;
+
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
@@ -126,15 +134,31 @@ class UserResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('img')->label('الصورة')->disk('public_direct')->circular(),
-                TextColumn::make('name')->label('الاسم'),
-                TextColumn::make('father')->label('الأب'),
-                TextColumn::make('email')->label('البريد'),
-                TextColumn::make('phone')->label('الهاتف'),
+                TextColumn::make('name')
+                    ->label('الاسم')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('father')
+                    ->label('الأب')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('email')
+                    ->label('البريد')
+                    ->searchable()
+                    ->sortable()
+                    ->copyable()
+                    ->copyMessage('تم نسخ البريد الإلكتروني'),
+                TextColumn::make('phone')
+                    ->label('الهاتف')
+                    ->searchable()
+                    ->copyable()
+                    ->copyMessage('تم نسخ رقم الهاتف'),
 
                 TextColumn::make('registration_date')
                     ->label('تاريخ التسجيل')
                     ->date('Y-m-d')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
 
                 TextColumn::make('subscription_end_date')
                     ->label('انتهاء الاشتراك')
@@ -155,11 +179,23 @@ class UserResource extends Resource
 
                         return 'success'; // أخضر للفعال
                     })
-                    ->sortable(),
-                // TextColumn::make('role')->label('الدور')->badge(),
-                TextColumn::make('plan.name')->label('الخطة الدراسية'),
+                    ->sortable()
+                    ->toggleable(),
+
+                TextColumn::make('plan.name')
+                    ->label('الخطة الدراسية')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+
+                TextColumn::make('created_at')
+                    ->label('تاريخ الإنشاء')
+                    ->dateTime('Y-m-d H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                // فلتر حالة الاشتراك
                 SelectFilter::make('subscription_status')
                     ->label('حالة الاشتراك')
                     ->options([
@@ -184,15 +220,155 @@ class UserResource extends Resource
                                 return $query->whereNull('subscription_end_date');
                         }
                     }),
+
+                // فلتر الخطة الدراسية
+                SelectFilter::make('plan_id')
+                    ->label('الخطة الدراسية')
+                    ->relationship('plan', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                // فلتر تاريخ التسجيل
+                Filter::make('registration_date')
+                    ->form([
+                        DatePicker::make('registered_from')
+                            ->label('مسجل من تاريخ')
+                            ->placeholder('اختر التاريخ'),
+                        DatePicker::make('registered_until')
+                            ->label('مسجل حتى تاريخ')
+                            ->placeholder('اختر التاريخ'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['registered_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('registration_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['registered_until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('registration_date', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['registered_from'] ?? null) {
+                            $indicators[] = Indicator::make('مسجل من ' . Carbon::parse($data['registered_from'])->toFormattedDateString())
+                                ->removeField('registered_from');
+                        }
+                        if ($data['registered_until'] ?? null) {
+                            $indicators[] = Indicator::make('مسجل حتى ' . Carbon::parse($data['registered_until'])->toFormattedDateString())
+                                ->removeField('registered_until');
+                        }
+                        return $indicators;
+                    }),
+
+                // فلتر انتهاء الاشتراك
+                Filter::make('subscription_expiry')
+                    ->form([
+                        DatePicker::make('expires_from')
+                            ->label('ينتهي من تاريخ')
+                            ->placeholder('اختر التاريخ'),
+                        DatePicker::make('expires_until')
+                            ->label('ينتهي حتى تاريخ')
+                            ->placeholder('اختر التاريخ'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['expires_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('subscription_end_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['expires_until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('subscription_end_date', '<=', $date),
+                            );
+                    }),
+
+                // فلتر الطلاب بدون رقم هاتف
+                TernaryFilter::make('has_phone')
+                    ->label('لديه رقم هاتف')
+                    ->trueLabel('لديه رقم هاتف')
+                    ->falseLabel('بدون رقم هاتف')
+                    ->queries(
+                        true: fn(Builder $query) => $query->whereNotNull('phone')->where('phone', '!=', ''),
+                        false: fn(Builder $query) => $query->whereNull('phone')->orWhere('phone', ''),
+                    ),
+
+                // فلتر سريع للاشتراكات المنتهية اليوم
+                Filter::make('expires_today')
+                    ->toggle()
+                    ->label('ينتهي اليوم')
+                    ->query(fn(Builder $query): Builder => $query->whereDate('subscription_end_date', today())),
+
+                // فلتر الطلاب الجدد (آخر 7 أيام)
+                Filter::make('new_students')
+                    ->toggle()
+                    ->label('طلاب جدد (آخر 7 أيام)')
+                    ->query(fn(Builder $query): Builder => $query->where('registration_date', '>=', now()->subDays(7))),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()->label('عرض'),
                 Tables\Actions\EditAction::make()->label('تعديل'),
                 Tables\Actions\DeleteAction::make()->label('حذف'),
+
+                // إضافة إجراء سريع لتجديد الاشتراك
+                Tables\Actions\Action::make('extend_subscription')
+                    ->label('تجديد الاشتراك')
+                    ->icon('heroicon-o-clock')
+                    ->color('success')
+                    ->form([
+                        DatePicker::make('new_expiry_date')
+                            ->label('تاريخ انتهاء جديد')
+                            ->required()
+                            ->minDate(today())
+                            ->default(function ($record) {
+                                return $record->subscription_end_date
+                                    ? $record->subscription_end_date->addYear()
+                                    : now()->addYear();
+                            }),
+                    ])
+                    ->action(function (array $data, $record) {
+                        $record->update([
+                            'subscription_end_date' => $data['new_expiry_date']
+                        ]);
+
+                        Notification::make()
+                            ->title('تم تجديد الاشتراك بنجاح')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()->label('حذف جماعي'),
-            ]);
+
+                // إضافة إجراء جماعي لتجديد الاشتراكات
+                Tables\Actions\BulkAction::make('bulk_extend_subscription')
+                    ->label('تجديد الاشتراكات')
+                    ->icon('heroicon-o-clock')
+                    ->color('success')
+                    ->form([
+                        DatePicker::make('new_expiry_date')
+                            ->label('تاريخ انتهاء جديد للجميع')
+                            ->required()
+                            ->minDate(today()),
+                    ])
+                    ->action(function (Collection $records, array $data) {
+                        $records->each(function ($record) use ($data) {
+                            $record->update([
+                                'subscription_end_date' => $data['new_expiry_date']
+                            ]);
+                        });
+
+                        Notification::make()
+                            ->title('تم تجديد ' . $records->count() . ' اشتراك بنجاح')
+                            ->success()
+                            ->send();
+                    }),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->persistSortInSession()
+            ->persistSearchInSession()
+            ->persistFiltersInSession();
     }
 
     public static function getRelations(): array
