@@ -36,8 +36,19 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('رواد التعليم') // اسم الموقع
+            ->brandLogo(asset('images/logo.jpeg')) // شعار الموقع
+            ->brandLogoHeight('7rem') // ارتفاع الشعار
+            ->favicon(asset('images/logo.jpeg')) // أيقونة التبويبة
+            ->darkModeBrandLogo(asset('images/logoDark.webp')) // شعار للوضع المظلم
             ->colors([
-                'primary' => Color::Amber,
+                // 'primary' => Color::Amber,
+                'primary' => '#1f3a8c', // اللون الأساسي المطلوب
+                'secondary' => Color::Gray,
+                'success' => Color::Green,
+                'warning' => Color::Orange,
+                'danger' => Color::Red,
+                'info' => Color::Blue,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -49,7 +60,10 @@ class AdminPanelProvider extends PanelProvider
             // ->pages([
             //     Pages\Dashboard::class,
             // ])
-
+            ->renderHook(
+                'panels::head.end',
+                fn() => view('filament.hooks.header-styles')
+            )
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 // Widgets\AccountWidget::class,
