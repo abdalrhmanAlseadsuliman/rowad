@@ -37,7 +37,8 @@ class UserResource extends Resource
                     ->image()
                     ->imageEditor()
                     ->circleCropper()
-                     ->disk('public_direct')
+                      ->disk('public_direct')  
+                    ->directory('student_images')
                     ->label('الصورة الشخصية'),
         ]);
     }

@@ -11,10 +11,12 @@ class Book extends Model
 
     protected $guarded = [];
 
+  
     public function notes()
-    {
-        return $this->hasMany(Note::class);
-    }
+{
+    return $this->hasMany(Note::class);
+}
+    
 
     public function recentlyReadBooks()
     {
