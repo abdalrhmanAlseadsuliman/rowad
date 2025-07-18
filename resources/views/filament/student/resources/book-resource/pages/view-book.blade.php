@@ -1,127 +1,226 @@
-{{-- resources/views/filament/student/resources/book-resource/pages/view-book.blade.php --}}
 <x-filament-panels::page>
-    <div class="space-y-6">
-        {{-- معلومات الكتاب --}}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                        {{ $record->title }}
-                    </h1>
-                    <p class="text-gray-600 dark:text-gray-300">
-                        المؤلف: {{ $record->author ?? 'غير محدد' }}
-                    </p>
-                    @if($record->description)
-                        <p class="text-gray-600 dark:text-gray-300 mt-2">
-                            {{ $record->description }}
-                        </p>
-                    @endif
+    <div class="w-full">
+        <!-- المحتوى الرئيسي -->
+        <div class="grid grid-cols-12 gap-6 p-4">
+            <!-- قائمة الفهرس والعلامات والملاحظات -->
+            <div class="col-span-3 space-y-6">
+                <!-- الفهرس -->
+
+
+                <!-- العلامات -->
+                <div class="bg-white rounded-xl shadow p-5 border">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2" style="color:black">الصفحات التي توقفت عندها
+                    </h3>
+                    <ul id="bookmarks" class="space-y-2 text-sm" style="color:black"></ul>
                 </div>
 
-                <div class="flex space-x-2">
-                    <button
-                        onclick="openBookViewer()"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253z"></path>
-                        </svg>
-                        قراءة الكتاب
-                    </button>
+                <!-- نموذج الملاحظات البسيط -->
+                <div class="bg-white rounded-xl shadow p-5 border">
+                    <h3 class="text-lg font-semibold text-blue-800 mb-4" style="color:black">📝 ملاحظاتي</h3>
+                    <style>
+
+                    </style>
+                    <!-- نموذج إضافة ملاحظة بسيط -->
+
+
+                    <!-- قائمة الملاحظات -->
+                    <div class="space-y-3 max-h-96 overflow-y-auto">
+                        @forelse($notes as $note)
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-lg text-sm"
+                            wire:key="note-{{ $note->id }}">
+                            <div class="text-gray-700 mb-2">
+                                {!! $note->note !!}
+                            </div>
+                            <div class="flex justify-between items-center text-xs text-gray-500">
+                                <span>{{ $note->created_at->diffForHumans() }}</span>
+                                <button wire:click="deleteNote({{ $note->id }})"
+                                    wire:confirm="هل أنت متأكد من حذف هذه الملاحظة؟"
+                                    class="text-red-500 hover:text-red-700 hover:underline font-medium">
+                                    حذف
+                                </button>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="text-gray-500 italic text-sm text-center py-8 bg-gray-50 rounded-lg">
+                            <div class="text-2xl mb-2">📝</div>
+                            <div>لا توجد ملاحظات بعد.</div>
+                            <div class="text-xs mt-1">ابدأ بكتابة أول ملاحظة لك!</div>
+                        </div>
+                        @endforelse
+                    </div>
                 </div>
             </div>
 
-            {{-- عارض الكتاب --}}
-            <div id="book-viewer" class="hidden">
-                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold">{{ $record->title }}</h3>
-                        <div class="flex space-x-2">
-                            <button
-                                onclick="toggleFullscreen()"
-                                class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm">
-                                ملء الشاشة
-                            </button>
-                            <button
-                                onclick="closeBookViewer()"
-                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
-                                إغلاق
-                            </button>
-                        </div>
-                    </div>
+            <!-- عارض الـ PDF -->
+            <div class="col-span-9 flex flex-col items-center bg-white rounded-xl shadow p-5 border relative">
+                <canvas id="pdf-canvas" class="rounded-xl border shadow-lg max-w-full"></canvas>
+
+                <!-- معلومات الصفحة -->
+                <div class="mt-4 text-gray-600 text-sm">
+                    الصفحة <span id="current-page" class="font-bold">0</span> من <span id="total-pages"
+                        class="font-bold">0</span>
                 </div>
 
-                <div class="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-                    <iframe
-                        id="book-frame"
-                        src=""
-                        width="100%"
-                        height="600"
-                        style="border: none;"
-                        oncontextmenu="return false;"
-                        title="{{ $record->title }}">
-                    </iframe>
+                <!-- أدوات التنقل -->
+                <div class="mt-3 space-x-2">
+                    <button onclick="prevPage()" class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded">←
+                        الصفحة السابقة</button>
+                    <button onclick="nextPage()" class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded">الصفحة
+                        التالية →</button>
+                </div>
+
+                <!-- حالة العلامة وزر الإجراء -->
+                <div class="mt-5 text-center">
+                    <div id="bookmark-status" class="mb-3 text-sm text-gray-700"></div>
+                    <button onclick="toggleBookmark()" id="bookmark-btn"
+                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded transition">
+                        📌 وضع علامة على هذه الصفحة
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- إضافة الـ JavaScript للـ PDF -->
+    @push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-        function openBookViewer() {
-            const viewer = document.getElementById('book-viewer');
-            const frame = document.getElementById('book-frame');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-            viewer.classList.remove('hidden');
-            frame.src = '{{ $bookUrl }}';
+        const pdfUrl = "{{ asset('storage/' . $record->pdf_path) }}";
+        const STORAGE_KEY = 'bookmarks_{{ $record->id }}';
 
-            // تسجيل بداية القراءة
-            updateReadingProgress();
-        }
+        let pdfDoc = null;
+        let currentPage = 1;
+        let totalPages = 0;
 
-        function closeBookViewer() {
-            const viewer = document.getElementById('book-viewer');
-            const frame = document.getElementById('book-frame');
+        const canvas = document.getElementById('pdf-canvas');
+        const ctx = canvas.getContext('2d');
+        const currentPageElem = document.getElementById('current-page');
+        const totalPagesElem = document.getElementById('total-pages');
+        const bookmarksList = document.getElementById('bookmarks');
+        const bookmarkStatus = document.getElementById('bookmark-status');
+        const bookmarkBtn = document.getElementById('bookmark-btn');
 
-            viewer.classList.add('hidden');
-            frame.src = '';
-        }
+        async function loadPdf() {
+            pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+            totalPages = pdfDoc.numPages;
+            totalPagesElem.textContent = totalPages;
 
-        function toggleFullscreen() {
-            const viewer = document.getElementById('book-viewer');
+            const savedBookmarks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
-            if (viewer.requestFullscreen) {
-                viewer.requestFullscreen();
-            } else if (viewer.webkitRequestFullscreen) {
-                viewer.webkitRequestFullscreen();
-            } else if (viewer.msRequestFullscreen) {
-                viewer.msRequestFullscreen();
+            let startPage = 1;
+            if (savedBookmarks.length > 0) {
+                startPage = savedBookmarks.sort((a, b) => a - b)[0];
             }
+
+            renderPage(startPage);
+            loadBookmarks();
         }
 
-        function updateReadingProgress() {
-            // يمكنك إضافة AJAX call هنا لتحديث تقدم القراءة
-            fetch('{{ route("student.book.progress", $record) }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    book_id: {{ $record->id }},
-                    started_reading: true
-                })
+        async function renderPage(pageNum) {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({
+                scale: 1.4
+            });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            await page.render({
+                canvasContext: ctx,
+                viewport
+            }).promise;
+
+            currentPage = pageNum;
+            currentPageElem.textContent = currentPage;
+
+            updateBookmarkStatus();
+        }
+
+        function prevPage() {
+            if (currentPage <= 1) return;
+            renderPage(--currentPage);
+        }
+
+        function nextPage() {
+            if (currentPage >= totalPages) return;
+            renderPage(++currentPage);
+        }
+
+        function loadBookmarks() {
+            const bookmarks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            bookmarksList.innerHTML = '';
+
+            if (bookmarks.length === 0) {
+                bookmarksList.innerHTML = '<li class="text-gray-500 italic">لا توجد علامات محفوظة.</li>';
+                return;
+            }
+
+            bookmarks.sort((a, b) => a - b);
+            bookmarks.forEach(page => {
+                const li = document.createElement('li');
+                li.className =
+                    'flex justify-between items-center bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 cursor-pointer';
+                li.innerHTML = `
+                    <span onclick="renderPage(${page})">📄 صفحة ${page}</span>
+                    <button onclick="removeBookmark(${page})" class="text-red-500 hover:underline text-xs">حذف</button>
+                `;
+                bookmarksList.appendChild(li);
             });
         }
 
-        // منع النقر بالزر الأيمن والطباعة
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
+        function toggleBookmark() {
+            const bookmarks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+            const index = bookmarks.indexOf(currentPage);
+            if (index > -1) {
+                bookmarks.splice(index, 1);
+            } else {
+                bookmarks.push(currentPage);
+            }
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
+            loadBookmarks();
+            updateBookmarkStatus();
+        }
+
+        function removeBookmark(page) {
+            const bookmarks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            const index = bookmarks.indexOf(page);
+            if (index > -1) {
+                bookmarks.splice(index, 1);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
+                loadBookmarks();
+                if (page === currentPage) updateBookmarkStatus();
+            }
+        }
+
+        function updateBookmarkStatus() {
+            const bookmarks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            const isBookmarked = bookmarks.includes(currentPage);
+
+            if (isBookmarked) {
+                bookmarkStatus.innerHTML = `✅ هذه الصفحة موسومة بالفعل كعلامة مرجعية.`;
+                bookmarkBtn.textContent = '❌ إزالة العلامة من هذه الصفحة';
+                bookmarkBtn.classList.replace('bg-green-600', 'bg-red-600');
+                bookmarkBtn.classList.replace('hover:bg-green-700', 'hover:bg-red-700');
+            } else {
+                bookmarkStatus.innerHTML = `📌 يمكنك وضع علامة على هذه الصفحة للرجوع إليها لاحقاً.`;
+                bookmarkBtn.textContent = '📌 وضع علامة على هذه الصفحة';
+                bookmarkBtn.classList.replace('bg-red-600', 'bg-green-600');
+                bookmarkBtn.classList.replace('hover:bg-red-700', 'hover:bg-green-700');
+            }
+        }
+
+        // الاستماع لإعادة تحميل الملاحظات
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('refreshNotes', (event) => {
+                // إعادة تحميل الصفحة أو تحديث قائمة الملاحظات
+                window.location.reload();
+            });
         });
 
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && (e.keyCode === 83 || e.keyCode === 80)) {
-                e.preventDefault();
-                return false;
-            }
-        });
+        loadPdf();
     </script>
+    @endpush
 </x-filament-panels::page>

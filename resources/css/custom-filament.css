@@ -1,0 +1,12 @@
+/* resources/css/filament-custom.css */
+
+/* تغيير لون العناوين */
+
+.filament-header-heading {
+    color: #007bff; /* أزرق */
+}
+
+/* إضافة ظل على الكروت */
+.filament-card {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}

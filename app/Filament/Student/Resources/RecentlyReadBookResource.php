@@ -2,13 +2,16 @@
 
 namespace App\Filament\Student\Resources;
 
-use App\Filament\Student\Resources\RecentlyReadBookResource\Pages;
-use App\Models\RecentlyReadBook;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Models\RecentlyReadBook;
+use Filament\Resources\Resource;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\Layout\Grid;
+use Filament\Tables\Columns\Layout\Stack;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Student\Resources\RecentlyReadBookResource\Pages;
 
 class RecentlyReadBookResource extends Resource
 {
@@ -26,8 +29,10 @@ class RecentlyReadBookResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            // لا حاجة لإدخال user_id لأنه يحدد تلقائياً
-            // ولا حاجة لإدخال book_id من هنا غالبًا
+            Tables\Columns\TextColumn::make('book.namebook')->label('اسم الكتاب'),
+            Tables\Columns\TextColumn::make('book.subject')->label('المادة'),
+            Tables\Columns\TextColumn::make('current_page')->label('آخر صفحة'),
+            Tables\Columns\TextColumn::make('last_read_at')->label('آخر قراءة'),
         ]);
     }
 
@@ -35,27 +40,53 @@ class RecentlyReadBookResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('book.namebook')
-                    ->label('اسم الكتاب')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('book.subject')
-                    ->label('المادة'),
-                Tables\Columns\TextColumn::make('current_page')
-                    ->label('آخر صفحة')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('last_read_at')
-                    ->label('آخر قراءة')
-                    ->dateTime()
-                    ->sortable(),
+                Stack::make([
+                    Tables\Columns\TextColumn::make('book.namebook')
+                        ->label('اسم الكتاب')
+                        ->searchable(),
+                    ImageColumn::make('book.cover_image')
+                        ->label('غلاف الكتاب')
+                        ->disk('public_direct')
+                        ->height(120)
+                        ->width(90)
+                        ->circular(false),
+                    Tables\Columns\TextColumn::make('book.subject')
+                        ->label('المادة'),
+                    Tables\Columns\TextColumn::make('current_page')
+                        ->label('آخر صفحة')
+                        ->numeric()
+                        ->sortable(),
+                    Tables\Columns\TextColumn::make('last_read_at')
+                        ->label('آخر قراءة')
+                        ->dateTime()
+                        ->sortable(),
+                ]),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('عرض'),
+                Tables\Actions\ViewAction::make()
+                    ->label('عرض')
+                    ->icon('heroicon-o-book-open')
+                    ->color('success')
+                    ->url(function ($record) {
+                        // التحويل إلى صفحة عرض الكتاب من resource الكتب
+                        return route('filament.student.resources.books.view', [
+                            'record' => $record->book_id
+                        ]);
+                    })
+                    ->openUrlInNewTab(false), // أو true إذا كنت تريد فتحه في تبويب جديد
+
+                // يمكنك إضافة زر آخر للذهاب مباشرة لقراءة الكتاب
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()->label('حذف'),
                 ]),
+            ])
+            ->contentGrid([
+                'sm' => 1,
+                'md' => 2,
+                'xl' => 3,
             ]);
     }
 

@@ -9,13 +9,17 @@ class Note extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = ['user_id', 'book_id', 'note'];
 
+    // علاقة الملاحظة مع الطالب
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * الكتاب المرتبط بالملاحظة
+     */
     public function book()
     {
         return $this->belongsTo(Book::class);

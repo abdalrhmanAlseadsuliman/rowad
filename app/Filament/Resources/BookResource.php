@@ -16,6 +16,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 
 use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Actions\Action;
 
 use Filament\Tables\Columns\Layout\Group;
 use Filament\Support\Enums\FontWeight;
@@ -83,6 +84,7 @@ class BookResource extends Resource
         return $table
             ->columns([
                 Stack::make([
+<<<<<<< HEAD
                     // الصورة مع تحسينات
                     ImageColumn::make('cover_image')
                         ->label('غلاف الكتاب')
@@ -340,12 +342,56 @@ class BookResource extends Resource
         return round($bytes, $precision) . ' ' . $units[$i];
     }
 
+=======
+                    ImageColumn::make('cover_image')
+                        ->label('غلاف الكتاب')
+                        ->disk('public_direct')
+                        ->height(120)
+                        ->width(90)
+                        ->circular(false),
+
+                    TextColumn::make('namebook')
+                        ->label('اسم الكتاب')
+                        ->weight('bold'),
+
+                    TextColumn::make('subject')
+                        ->label('المادة'),
+
+                    TextColumn::make('educational_year')
+                        ->label('السنة الدراسية'),
+
+                    TextColumn::make('author')
+                        ->label('المؤلف'),
+
+                    TextColumn::make('publisher')
+                        ->label('الناشر')
+                        ->wrap(),
+
+                    TextColumn::make('isbn')
+                        ->label('ISBN'),
+                ]),
+            ])
+            ->contentGrid([
+                'sm' => 1,   // موبايل
+                'md' => 2,   // تابلت
+                'xl' => 3,   // شاشات أكبر
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+>>>>>>> abdulhameed
 
 
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Student\Resources\BookResource\RelationManagers\NotesRelationManager::class,
         ];
     }
 

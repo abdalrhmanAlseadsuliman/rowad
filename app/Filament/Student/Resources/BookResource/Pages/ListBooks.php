@@ -16,4 +16,10 @@ class ListBooks extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    // #[On('refreshTable')]
+    // public function refreshTable(): void
+    // {
+    //     $this->resetTable();
+    // }
 }

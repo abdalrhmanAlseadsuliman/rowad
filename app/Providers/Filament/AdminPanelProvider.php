@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Providers\Filament;
+<<<<<<< HEAD
 
 use Filament\Pages;
 use Filament\Panel;
@@ -18,14 +19,27 @@ use App\Filament\Widgets\SubscriptionChart;
 use App\Filament\Widgets\CustomAccountWidget;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
+=======
+use Filament\Facades\Filament;
+use Filament\Support\Facades\FilamentAsset;
+use Filament\Http\Middleware\Authenticate;
+>>>>>>> abdulhameed
 use Filament\Http\Middleware\AuthenticateSession;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Filament\Pages;
+use Filament\Panel;
+use Filament\Support\Assets\Css;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use SolutionForest\FilamentSimpleLightBox\SimpleLightBoxPlugin;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Http\Middleware\EnsureUserIsAdmin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -85,12 +99,34 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+<<<<<<< HEAD
                 EnsureUserIsAdmin::class,
+=======
+                // EnsureUserIsAdmin::class,
+>>>>>>> abdulhameed
             ])
+          
             ->authMiddleware([
                 Authenticate::class,
+<<<<<<< HEAD
             ])
             ->plugin(SimpleLightBoxPlugin::make())
         ;
+=======
+            ]);
+>>>>>>> abdulhameed
     }
+//     public function boot(): void
+// {
+//     Filament::registerRenderHook(
+//         'styles.end', // مكان إدراج الـ CSS قبل نهاية <head>
+//         fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-custom.css') . '"/>'
+//     );
+// }
+public function boot(): void
+{
+    FilamentAsset::register([
+        Css::make('custom-filament', asset('css/custom-filament.css')),
+    ]);
+}
 }

@@ -33,12 +33,13 @@ class UserResource extends Resource
             Forms\Components\DatePicker::make('birthdate')->label('تاريخ الميلاد'),
             Forms\Components\TextInput::make('email')->label('البريد الإلكتروني')->email()->required(),
             Forms\Components\TextInput::make('phone')->label('رقم الهاتف'),
-             FileUpload::make('img')
-                    ->image()
-                    ->imageEditor()
-                    ->circleCropper()
-                     ->disk('public_direct')
-                    ->label('الصورة الشخصية'),
+            FileUpload::make('img')
+                ->image()
+                ->imageEditor()
+                ->circleCropper()
+                ->disk('public_direct')
+                ->directory('student_images')
+                ->label('الصورة الشخصية'),
         ]);
     }
 
@@ -47,7 +48,7 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('الاسم'),
-                ImageColumn::make('img')->label('الصورة')->circular(),
+                ImageColumn::make('img')->label('الصورة')->circular()->disk('public_direct'),
                 Tables\Columns\TextColumn::make('email')->label('البريد الإلكتروني'),
                 Tables\Columns\TextColumn::make('phone')->label('الهاتف'),
                 Tables\Columns\TextColumn::make('birthdate')->label('تاريخ الميلاد')->date(),
