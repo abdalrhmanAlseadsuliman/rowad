@@ -2,16 +2,17 @@
 
 namespace App\Filament\Student\Resources;
 
-use App\Filament\Student\Resources\BookResource\Pages;
 use App\Models\Book;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Grid;
 use Filament\Tables\Columns\Layout\Stack;
+use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Student\Resources\BookResource\Pages;
 
 class BookResource extends Resource
 {
@@ -41,63 +42,59 @@ class BookResource extends Resource
                     Tables\Columns\TextColumn::make('namebook')->label('اسم الكتاب')->searchable(),
                     Tables\Columns\TextColumn::make('subject')->label('المادة')->searchable(),
                     Tables\Columns\TextColumn::make('educational_year')->label('الصف الدراسي'),
-                    Tables\Columns\ImageColumn::make('cover_image')->label('الغلاف')->disk('public_direct')->directory('book-covers'),
-
-
+                    ImageColumn::make('cover_image')
+                        ->label('غلاف الكتاب')
+                        ->disk('public_direct')
+                        ->height(120)
+                        ->width(90)
+                        ->circular(false),
                     Tables\Columns\TextColumn::make('author')->label('المؤلف'),
                     Tables\Columns\TextColumn::make('publisher')->label('الناشر'),
+                ]),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make()->label('عرض'),
 
-                ])
-                    ->actions([
-                        Tables\Actions\ViewAction::make()->label('عرض'),
-
-                        // ✅ هذا هو زر المفضلة، تم نقله لمكانه الصحيح داخل ->actions()
-                        Action::make('toggleFavorite')
-                            ->label(
-                                fn($record) =>
-                                auth()->user()->favoriteBooks->contains($record->id)
-                                    ? 'إزالة من المفضلة'
-                                    : 'إضافة إلى المفضلة'
-                            )
-                            ->icon(
-                                fn($record) =>
-                                auth()->user()->favoriteBooks->contains($record->id)
-                                    ? 'heroicon-o-bookmark-slash'
-                                    : 'heroicon-o-bookmark'
-                            )
-                            ->color(
-                                fn($record) =>
-                                auth()->user()->favoriteBooks->contains($record->id)
-                                    ? 'danger'
-                                    : 'primary'
-                            )
-                            ->action(function ($record) {
-                                $user = auth()->user();
-
-                                // ✅ تبديل المفضلة
-                                if ($user->favoriteBooks->contains($record->id)) {
-                                    $user->favoriteBooks()->detach($record->id);
-                                } else {
-                                    $user->favoriteBooks()->attach($record->id);
-                                }
-
-                                // ✅ إعادة تحميل العلاقة حتى تُحدّث الأيقونة واللون فورًا
-                                $user->load('favoriteBooks');
-                            })
-                            ->after(function ($record, $action) {
-
-                                $action->getLivewire()->dispatch('$refresh');
-                            })
-
-                    ])
+                Action::make('toggleFavorite')
+                    ->label(
+                        fn($record) =>
+                        auth()->user()->favoriteBooks->contains($record->id)
+                            ? 'إزالة من المفضلة'
+                            : 'إضافة إلى المفضلة'
+                    )
+                    ->icon(
+                        fn($record) =>
+                        auth()->user()->favoriteBooks->contains($record->id)
+                            ? 'heroicon-o-bookmark-slash'
+                            : 'heroicon-o-bookmark'
+                    )
+                    ->color(
+                        fn($record) =>
+                        auth()->user()->favoriteBooks->contains($record->id)
+                            ? 'danger'
+                            : 'primary'
+                    )
+                    ->action(function ($record) {
+                        $user = auth()->user();
+                        if ($user->favoriteBooks->contains($record->id)) {
+                            $user->favoriteBooks()->detach($record->id);
+                        } else {
+                            $user->favoriteBooks()->attach($record->id);
+                        }
+                        $user->load('favoriteBooks');
+                    })
+                    ->after(function ($record, $action) {
+                        $action->getLivewire()->dispatch('$refresh');
+                    }),
             ])
             ->contentGrid([
-                'sm' => 1,   // موبايل
-                'md' => 2,   // تابلت
-                'xl' => 3,   // شاشات أكبر
+                'sm' => 1,
+                'md' => 2,
+                'xl' => 3,
             ])
             ->bulkActions([]);
     }
+
 
     public static function getRelations(): array
     {

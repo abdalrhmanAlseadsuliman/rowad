@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +17,9 @@ class Note extends Model
         return $this->belongsTo(User::class);
     }
 
-    // علاقة الملاحظة مع الكتاب
+    /**
+     * الكتاب المرتبط بالملاحظة
+     */
     public function book()
     {
         return $this->belongsTo(Book::class);

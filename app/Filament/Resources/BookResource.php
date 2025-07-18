@@ -68,67 +68,68 @@ class BookResource extends Resource
                 FileUpload::make('pdf_path')
                     ->label('ملف PDF')
                     ->required()
-                     ->disk('public_direct')
+                    ->disk('public_direct')
                     ->acceptedFileTypes(['application/pdf'])
                     ->directory('books-pdf')
-                      ->directory('books'),
+                    ->directory('books'),
 
 
             ]);
     }
 
-  public static function table(Table $table): Table
-{
-    return $table
-        ->columns([
-            Stack::make([
-                ImageColumn::make('cover_image')
-                    ->label('غلاف الكتاب')
-                    ->disk('public_direct')
-                    ->height(120)
-                    ->width(90)
-                    ->circular(false),
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Stack::make([
+                    ImageColumn::make('cover_image')
+                        ->label('غلاف الكتاب')
+                        ->disk('public_direct')
+                        ->height(120)
+                        ->width(90)
+                        ->circular(false),
 
-                TextColumn::make('namebook')
-                    ->label('اسم الكتاب')
-                    ->weight('bold'),
+                    TextColumn::make('namebook')
+                        ->label('اسم الكتاب')
+                        ->weight('bold'),
 
-                TextColumn::make('subject')
-                    ->label('المادة'),
+                    TextColumn::make('subject')
+                        ->label('المادة'),
 
-                TextColumn::make('educational_year')
-                    ->label('السنة الدراسية'),
+                    TextColumn::make('educational_year')
+                        ->label('السنة الدراسية'),
 
-                TextColumn::make('author')
-                    ->label('المؤلف'),
+                    TextColumn::make('author')
+                        ->label('المؤلف'),
 
-                TextColumn::make('publisher')
-                    ->label('الناشر')
-                    ->wrap(),
+                    TextColumn::make('publisher')
+                        ->label('الناشر')
+                        ->wrap(),
 
-                TextColumn::make('isbn')
-                    ->label('ISBN'),
-            ]),
-        ])
-        ->contentGrid([
-            'sm' => 1,   // موبايل
-            'md' => 2,   // تابلت
-            'xl' => 3,   // شاشات أكبر
-        ])
-        ->actions([
-            Tables\Actions\EditAction::make(),
-        ])
-        ->bulkActions([
-            Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]),
-        ]);
-}
+                    TextColumn::make('isbn')
+                        ->label('ISBN'),
+                ]),
+            ])
+            ->contentGrid([
+                'sm' => 1,   // موبايل
+                'md' => 2,   // تابلت
+                'xl' => 3,   // شاشات أكبر
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
 
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Student\Resources\BookResource\RelationManagers\NotesRelationManager::class,
         ];
     }
 

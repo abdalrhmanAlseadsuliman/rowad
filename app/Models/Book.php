@@ -11,12 +11,20 @@ class Book extends Model
 
     protected $guarded = [];
 
-  
+
     public function notes()
-{
-    return $this->hasMany(Note::class);
-}
-    
+    {
+        return $this->hasMany(Note::class);
+    }
+
+    /**
+     * ملاحظات المستخدم الحالي فقط على هذا الكتاب
+     */
+    public function userNotes()
+    {
+        return $this->hasMany(Note::class)->where('user_id', auth()->id());
+    }
+
 
     public function recentlyReadBooks()
     {
@@ -28,9 +36,9 @@ class Book extends Model
         return $this->hasMany(Favorite::class);
     }
     public function favoritedByUsers()
-{
-    return $this->belongsToMany(User::class, 'favorites');
-}
+    {
+        return $this->belongsToMany(User::class, 'favorites');
+    }
 
     public function studyPlans()
     {

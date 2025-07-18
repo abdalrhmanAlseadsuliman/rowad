@@ -30,42 +30,41 @@ class NoteResource extends Resource
                 // ربط الملاحظة بالكتاب
                 Forms\Components\Select::make('book_id')
                     ->label('اسم الكتاب')
-                    ->relationship('book', 'title') // يفترض وجود حقل title في Model Book
+                    ->relationship('book', 'namebook') // يفترض وجود حقل title في Model Book
                     ->required()
-                    ->searchable(),
+                    ->searchable()->preload(),
 
                 // حقل الملاحظة النصية
-                Forms\Components\Textarea::make('note')
+                \Filament\Forms\Components\RichEditor::make('note')
                     ->label('الملاحظة')
-                    ->rows(6)
                     ->required(),
 
                 // تعيين user_id تلقائيًا دون إظهاره
                 Forms\Components\Hidden::make('user_id')
-                    ->default(fn () => auth()->id()),
+                    ->default(fn() => auth()->id()),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-           ->columns([
-            Stack::make([
-                // عرض اسم الكتاب بدل رقم الـ id
-                Tables\Columns\TextColumn::make('book.title')
-                    ->label('الكتاب')
-                    ->sortable()
-                    ->searchable(),
+            ->columns([
+                Stack::make([
+                    Tables\Columns\TextColumn::make('book.namebook')
+                        ->label('الكتاب')
+                        ->sortable()
+                        ->searchable(),
 
-                Tables\Columns\TextColumn::make('note')
-                    ->label('الملاحظة')
-                    ->limit(50)
-                    ->wrap(),
+                    Tables\Columns\TextColumn::make('note')
+                        ->label('الملاحظة')
+                        ->limit(50)
+                        ->wrap(),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ الإضافة')
-                    ->dateTime()
-                    ->sortable(),
+                    Tables\Columns\TextColumn::make('created_at')
+                        ->label('تاريخ الإضافة')
+                        ->dateTime()
+                        ->sortable(),
+                ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()->label('عرض'),
@@ -75,12 +74,11 @@ class NoteResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()->label('حذف'),
                 ]),
-                  ])
-        ->contentGrid([
-            'sm' => 1,   // موبايل
-            'md' => 2,   // تابلت
-            'xl' => 3,   // شاشات أكبر
-        ])
+            ])
+            ->contentGrid([
+                'sm' => 1,
+                'md' => 2,
+                'xl' => 3,
             ]);
     }
 
