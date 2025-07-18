@@ -10,6 +10,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Layout\Grid;
+use Filament\Tables\Columns\Layout\Stack;
 
 class BookResource extends Resource
 {
@@ -35,12 +37,16 @@ class BookResource extends Resource
 {
     return $table
         ->columns([
+            Stack::make([
             Tables\Columns\TextColumn::make('namebook')->label('اسم الكتاب')->searchable(),
             Tables\Columns\TextColumn::make('subject')->label('المادة')->searchable(),
             Tables\Columns\TextColumn::make('educational_year')->label('الصف الدراسي'),
-            Tables\Columns\ImageColumn::make('cover_image')->label('الغلاف'),
+            Tables\Columns\ImageColumn::make('cover_image')->label('الغلاف') ->disk('public_direct')  ->directory('book-covers'),
+                
+                  
             Tables\Columns\TextColumn::make('author')->label('المؤلف'),
             Tables\Columns\TextColumn::make('publisher')->label('الناشر'),
+         
         ])
         ->actions([
             Tables\Actions\ViewAction::make()->label('عرض'),
@@ -81,6 +87,12 @@ class BookResource extends Resource
     })
                    
             ])
+              ])
+        ->contentGrid([
+            'sm' => 1,   // موبايل
+            'md' => 2,   // تابلت
+            'xl' => 3,   // شاشات أكبر
+        ])
             ->bulkActions([]);
     }
 

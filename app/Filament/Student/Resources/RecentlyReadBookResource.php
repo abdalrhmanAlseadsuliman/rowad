@@ -9,6 +9,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\Layout\Grid;
+use Filament\Tables\Columns\Layout\Stack;
 
 class RecentlyReadBookResource extends Resource
 {
@@ -34,7 +36,8 @@ class RecentlyReadBookResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
+             ->columns([
+            Stack::make([
                 Tables\Columns\TextColumn::make('book.namebook')
                     ->label('اسم الكتاب')
                     ->searchable(),
@@ -56,6 +59,12 @@ class RecentlyReadBookResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()->label('حذف'),
                 ]),
+                  ])
+        ->contentGrid([
+            'sm' => 1,   // موبايل
+            'md' => 2,   // تابلت
+            'xl' => 3,   // شاشات أكبر
+        ])
             ]);
     }
 

@@ -9,6 +9,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Student\Resources\FavoriteResource\Pages;
+use Filament\Tables\Columns\Layout\Grid;
+use Filament\Tables\Columns\Layout\Stack;
 
 class FavoriteResource extends Resource
 {
@@ -36,13 +38,21 @@ class FavoriteResource extends Resource
     {
         return $table
             ->columns([
+            Stack::make([
                 Tables\Columns\TextColumn::make('namebook')->label('اسم الكتاب')->searchable(),
                 Tables\Columns\TextColumn::make('subject')->label('المادة')->searchable(),
                 Tables\Columns\TextColumn::make('educational_year')->label('الصف الدراسي'),
-                Tables\Columns\ImageColumn::make('cover_image')->label('الغلاف'),
+                       Tables\Columns\ImageColumn::make('cover_image')->label('الغلاف') ->disk('public_direct')  ->directory('book-covers'),
+
                 Tables\Columns\TextColumn::make('author')->label('المؤلف'),
                 Tables\Columns\TextColumn::make('publisher')->label('الناشر'),
             ])
+              ])
+        ->contentGrid([
+            'sm' => 1,   // موبايل
+            'md' => 2,   // تابلت
+            'xl' => 3,   // شاشات أكبر
+        ])
             ->actions([
                 Tables\Actions\ViewAction::make()->label('عرض'),
             ])
