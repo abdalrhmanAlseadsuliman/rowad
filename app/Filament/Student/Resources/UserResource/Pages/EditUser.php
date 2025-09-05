@@ -10,11 +10,21 @@ class EditUser extends EditRecord
 {
     protected static string $resource = UserResource::class;
 
+    public function getBreadcrumb(): string
+    {
+        return 'تعديل';
+    }
+
+    public function getTitle(): string
+    {
+        return 'تعديل بيانات الطالب';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
+            Actions\ViewAction::make()->label('عرض'),
+            Actions\DeleteAction::make()->label('حذف'),
         ];
     }
 }

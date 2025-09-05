@@ -28,7 +28,8 @@ class StudentPanelProvider extends PanelProvider
             ->id('student')
             ->path('student')
             ->colors([
-                'primary' => Color::Amber,
+                // 'primary' => Color::Amber,
+                'primary' => '#1f3a8c',
             ])
             ->login()
             ->discoverResources(in: app_path('Filament/Student/Resources'), for: 'App\\Filament\\Student\\Resources')

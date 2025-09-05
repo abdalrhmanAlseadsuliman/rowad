@@ -10,6 +10,17 @@ class ViewRecentlyReadBook extends ViewRecord
 {
     protected static string $resource = RecentlyReadBookResource::class;
 
+
+    public function getBreadcrumb(): string
+    {
+        return 'عرض';
+    }
+
+    public function getTitle(): string
+    {
+        return 'عرض الكتاب المقروءة';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

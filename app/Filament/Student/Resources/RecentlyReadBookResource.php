@@ -19,6 +19,8 @@ class RecentlyReadBookResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clock';
     protected static ?string $navigationLabel = 'الكتب المقروءة';
+    protected static ?string $pluralModelLabel = 'الكتب المقروءة';
+
 
     public static function getEloquentQuery(): Builder
     {

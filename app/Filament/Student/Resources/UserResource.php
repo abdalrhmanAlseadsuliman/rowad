@@ -16,9 +16,13 @@ use App\Filament\Student\Resources\UserResource\Pages;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
+
     protected static ?string $navigationLabel = 'معلوماتي';
-    protected static ?string $modelLabel = 'معلومات الطالب';
+    protected static ?string $pluralModelLabel = 'معلوماتي';
+    protected static ?string $modelLabel = 'معلوماتي';
     protected static ?string $navigationIcon = 'heroicon-o-user';
+
+
 
     public static function getEloquentQuery(): Builder
     {

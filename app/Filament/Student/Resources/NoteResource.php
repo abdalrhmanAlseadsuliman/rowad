@@ -12,6 +12,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\Layout\Grid;
 use Filament\Tables\Columns\Layout\Stack;
+use App\Models\Book;
 
 class NoteResource extends Resource
 {
@@ -28,12 +29,22 @@ class NoteResource extends Resource
         return $form
             ->schema([
                 // ربط الملاحظة بالكتاب
+                // Forms\Components\Select::make('book_id')
+                //     ->label('اسم الكتاب')
+                //     ->relationship('book', 'namebook') // يفترض وجود حقل title في Model Book
+                //     ->required()
+                //     ->searchable()->preload(),
+
                 Forms\Components\Select::make('book_id')
                     ->label('اسم الكتاب')
-                    ->relationship('book', 'namebook') // يفترض وجود حقل title في Model Book
+                    ->options(function () {
+                        return Book::whereHas('studyPlans', function ($query) {
+                            $query->where('study_plans.id', auth()->user()->plan_id);
+                        })->pluck('namebook', 'id');
+                    })
                     ->required()
-                    ->searchable()->preload(),
-
+                    ->searchable()
+                    ->preload(),
                 // حقل الملاحظة النصية
                 \Filament\Forms\Components\RichEditor::make('note')
                     ->label('الملاحظة')
@@ -58,6 +69,7 @@ class NoteResource extends Resource
                     Tables\Columns\TextColumn::make('note')
                         ->label('الملاحظة')
                         ->limit(50)
+                        ->html()
                         ->wrap(),
 
                     Tables\Columns\TextColumn::make('created_at')

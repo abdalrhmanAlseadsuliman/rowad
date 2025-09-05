@@ -10,6 +10,16 @@ class EditBook extends EditRecord
 {
     protected static string $resource = BookResource::class;
 
+    public function getBreadcrumb(): string
+    {
+        return 'تعديل';
+    }
+
+    public function getTitle(): string
+    {
+        return 'تعديل كتاب';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

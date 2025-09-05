@@ -10,10 +10,20 @@ class ListNotes extends ListRecords
 {
     protected static string $resource = NoteResource::class;
 
+    public function getBreadcrumb(): string
+    {
+        return 'عرض الملاحظات';
+    }
+
+    public function getTitle(): string
+    {
+        return 'الملاحظات';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->label('اضافة ملاحظة'),
         ];
     }
 }

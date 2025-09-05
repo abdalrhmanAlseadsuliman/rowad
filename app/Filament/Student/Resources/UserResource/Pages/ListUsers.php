@@ -10,10 +10,20 @@ class ListUsers extends ListRecords
 {
     protected static string $resource = UserResource::class;
 
-    protected function getHeaderActions(): array
+    public function getBreadcrumb(): string
     {
-        return [
-            Actions\CreateAction::make(),
-        ];
+        return 'قائمة';
     }
+
+    public function getTitle(): string
+    {
+        return 'معلوماتي';
+    }
+
+    // protected function getHeaderActions(): array
+    // {
+    //     return [
+    //         Actions\CreateAction::make()->,
+    //     ];
+    // }
 }

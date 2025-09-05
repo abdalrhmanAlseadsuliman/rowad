@@ -21,6 +21,9 @@ class FavoriteResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-star';
     protected static ?string $navigationLabel = 'المفضلة';
 
+    protected static ?string $pluralModelLabel = 'المفضلة';
+
+
     // ✅ فقط الكتب التي أضافها المستخدم للمفضلة
     public static function getEloquentQuery(): Builder
     {

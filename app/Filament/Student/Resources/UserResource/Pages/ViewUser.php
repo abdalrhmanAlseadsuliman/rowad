@@ -10,10 +10,21 @@ class ViewUser extends ViewRecord
 {
     protected static string $resource = UserResource::class;
 
+
+    public function getBreadcrumb(): string
+    {
+        return 'عرض';
+    }
+
+    public function getTitle(): string
+    {
+        return 'عرض طالب';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make(),
+            Actions\EditAction::make()->label('تعديل'),
         ];
     }
 }

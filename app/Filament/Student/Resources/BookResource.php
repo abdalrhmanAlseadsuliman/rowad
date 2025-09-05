@@ -20,6 +20,8 @@ class BookResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
     protected static ?string $navigationLabel = 'كتبي الدراسية';
+    protected static ?string $pluralModelLabel = 'كتبي الدراسية';
+
 
     public static function getEloquentQuery(): Builder
     {
