@@ -6,8 +6,11 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Http\Middleware\Authenticate;
+use Filament\Support\Facades\FilamentAsset;
+use App\Filament\Widgets\CustomAccountWidget;
 use Illuminate\Session\Middleware\StartSession;
 use App\Http\Middleware\CheckSubscriptionStatus;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -19,6 +22,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use SolutionForest\FilamentSimpleLightBox\SimpleLightBoxPlugin;
+use App\Filament\Student\Pages\Dashboard; // إضافة الصفحة المخصصة
 
 class StudentPanelProvider extends PanelProvider
 {
@@ -28,20 +32,38 @@ class StudentPanelProvider extends PanelProvider
             ->id('student')
             ->path('student')
             ->colors([
-                // 'primary' => Color::Amber,
                 'primary' => '#1f3a8c',
             ])
+            ->brandName('رواد التعليم')
+            ->brandLogo(asset('images/logo.jpeg'))
+            ->brandLogoHeight('7rem')
+            ->favicon(asset('images/logo.jpeg'))
+            ->darkModeBrandLogo(asset('images/logoDark.webp'))
             ->login()
             ->discoverResources(in: app_path('Filament/Student/Resources'), for: 'App\\Filament\\Student\\Resources')
             ->discoverPages(in: app_path('Filament/Student/Pages'), for: 'App\\Filament\\Student\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Dashboard::class, //
             ])
+            ->renderHook(
+                'panels::head.end',
+                fn() => view('filament.hooks.header-styles')
+            )
             ->discoverWidgets(in: app_path('Filament/Student/Widgets'), for: 'App\\Filament\\Student\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // \Filament\Widgets\AccountWidget::class,
+                // تم حذف FilamentInfoWidget::class
             ])
+            ->widgets([
+                // StatsOverview::class,
+                // UsersChart::class,
+                // SubscriptionChart::class,
+                // RecentActivity::class,
+                // ContentStats::class,
+                CustomAccountWidget::class,
+            ])
+
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -53,12 +75,17 @@ class StudentPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 CheckSubscriptionStatus::class,
-
             ])
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->plugin(SimpleLightBoxPlugin::make())
-        ;
+            ->plugin(SimpleLightBoxPlugin::make());
+    }
+
+    public function boot(): void
+    {
+        FilamentAsset::register([
+            Css::make('custom-filament', asset('css/custom-filament.css')),
+        ]);
     }
 }
