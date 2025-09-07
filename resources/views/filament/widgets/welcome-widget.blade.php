@@ -26,11 +26,12 @@ $greeting = $hour < 12 ? 'صباح الخير' : ($hour < 17 ? 'مساء الخ�
 
                 <!-- التحية -->
                 <div>
-                    <p class="text-white font-medium text-sm opacity-90">{{ $greeting }}</p>
-                    <h2 class="text-xl font-bold text-white mb-1">{{ $user->name }}</h2>
+                    <p class=" font-medium text-sm opacity-90" style="color:#5674d0">{{ $greeting }}</p>
+                    <h2 class="text-xl font-bold  mb-1" style="color:#5674d0">{{ $user->name }}</h2>
                     @if($user->plan)
-                    <div class="inline-flex items-center px-2 py-1 bg-white/20 rounded-full text-xs text-white">
-                        <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="inline-flex items-center px-2 py-1 bg-white/20 rounded-full text-xs"
+                        style="color:#5674d0">
+                        <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 24 24" style="color:#5674d0">
                             <path
                                 d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z" />
                         </svg>
